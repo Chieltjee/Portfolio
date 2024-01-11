@@ -1,5 +1,5 @@
 on script load:
-    set {mongoCluster} to mongo server with connection string "mongodb+srv://admin:DjSF4dBfnTbnwuwO@cluster0.rksnz.mongodb.net/database?retryWrites=true&w=majority"
+    set {mongoCluster} to mongo server with connection string "{connection string}"
     set {mongoDatabase} to mongo database "database" of {mongoCluster}
     set {mongoCollection} to mongo collection "collection" of {mongoDatabase}
 
