@@ -1,0 +1,108 @@
+on script load:
+    set {mongoCluster} to mongo server with connection string "mongodb+srv://admin:DjSF4dBfnTbnwuwO@cluster0.rksnz.mongodb.net/database?retryWrites=true&w=majority"
+    set {mongoDatabase} to mongo database "database" of {mongoCluster}
+    set {mongoCollection} to mongo collection "collection" of {mongoDatabase}
+
+on join:
+    DBLoad(player)
+
+on quit:
+    DBSave(player)
+    delete {rank::%player's uuid%}
+    delete {multi::%player's uuid%}
+    delete {chatcolor.%player's uuid%}
+    delete {farmcoins.%player's uuid%}
+    delete {cropsharvested.%player's uuid%::*}
+    delete {playerdata.%player's uuid%::cropsharvested}
+    delete {contract.sell.type::%player's uuid%}
+    delete {contract.sell.balance::%player's uuid%}
+    delete {contract.sell.required::%player's uuid%}
+    delete {contract.harvest.type::%player's uuid%}
+    delete {contract.harvest.balance::%player's uuid%}
+    delete {contract.harvest.required::%player's uuid%}
+    delete {personalplots::%player's uuid%}
+    delete {rankplots::%player%}
+    delete {plots::%player's uuid%}
+
+every 3 minutes:
+    loop all players:
+        DBSave(loop-player)
+
+function DBLoad(p: player):
+    set {_uuid} to uuid of {_p}
+    set {_doc} to first mongo document with mongosk filter where field "uuid" is {_uuid} of collection {mongoCollection}
+    if {_doc} is not set:
+        DBNewDocument({_p})
+    else:
+        set {rank::%{_uuid}%} to mongo value "rank" of {_doc}
+        set {rank::%{_uuid}%} to {rank::%{_uuid}%} parsed as integer
+        set {multi::%{_uuid}%} to mongo value "multi" of {_doc}
+        set {multi::%{_uuid}%} to {multi::%{_uuid}%} parsed as number
+        set {chatcolor.%{_uuid}%} to mongo value "chatcolor" of {_doc}
+        set {farmcoins.%{_uuid}%} to mongo value "farmcoins" of {_doc}
+        set {farmcoins.%{_uuid}%} to {farmcoins.%{_uuid}%} parsed as number
+        set {playerdata.%{_p}'s uuid%::cropsharvested} to mongo value "cropsharvested" of {_doc}
+        ConvertVars({_p})
+        set {contract.sell.type::%{_uuid}%} to mongo value "contractselltype" of {_doc}
+        set {contract.sell.balance::%{_uuid}%} to mongo value "contractsellbalance" of {_doc}
+        set {contract.sell.balance::%{_uuid}%} to {contract.sell.balance::%{_uuid}%} parsed as integer
+        set {contract.sell.required::%{_uuid}%} to mongo value "contractsellrequired" of {_doc}
+        set {contract.sell.required::%{_uuid}%} to {contract.sell.required::%{_uuid}%} parsed as integer
+        set {contract.harvest.type::%{_uuid}%} to mongo value "contractharvesttype" of {_doc}
+        set {contract.harvest.balance::%{_uuid}%} to mongo value "contractharvestbalance" of {_doc}
+        set {contract.harvest.balance::%{_uuid}%} to {contract.harvest.balance::%{_uuid}%} parsed as integer
+        set {contract.harvest.required::%{_uuid}%} to mongo value "contractharvestrequired" of {_doc}
+        set {contract.harvest.required::%{_uuid}%} to {contract.harvest.required::%{_uuid}%} parsed as integer
+        set {personalplots::%{_uuid}%} to mongo value "personalplots" of {_doc}
+        set {personalplots::%{_uuid}%} to {personalplots::%{_uuid}%} parsed as integer
+        set {rankplots::%{_p}%} to mongo value "rankplots" of {_doc}
+        set {rankplots::%{_p}%} to {rankplots::%{_p}%} parsed as integer
+        set {plots::%{_uuid}%} to {rankplots::%{_p}%} + {personalplots::%{_uuid}%}
+        send action bar "&aLoaded data" to {_p}
+
+function DBSave(p: player):
+    set {_uuid} to uuid of {_p}
+    set {_doc} to first mongo document with mongosk filter where field "uuid" is {_uuid} of collection {mongoCollection}
+    set mongo value "rank" of {_doc} to "%{rank::%{_uuid}%} ? 0%"
+    set mongo value "multi" of {_doc} to "%{multi::%{_uuid}%}%"
+    set mongo value "chatcolor" of {_doc} to "%{chatcolor.%{_uuid}%} ? {defaultcolor}%"
+    set mongo value "farmcoins" of {_doc} to "%{farmcoins.%{_uuid}%} ? 0%"
+    set mongo value "cropsharvested" of {_doc} to "wheat,%{cropsharvested.%{_uuid}%::wheat} ? 0%|beetroot,%{cropsharvested.%{_uuid}%::beetroot} ? 0%|carrot,%{cropsharvested.%{_uuid}%::carrot} ? 0%|potato,%{cropsharvested.%{_uuid}%::potato} ? 0%|netherwart,%{cropsharvested.%{_uuid}%::netherwart} ? 0%|sugarcane,%{cropsharvested.%{_uuid}%::sugarcane} ? 0%|melon,%{cropsharvested.%{_uuid}%::melon} ? 0%|pumpkin,%{cropsharvested.%{_uuid}%::pumpkin} ? 0%"
+    set mongo value "contractselltype" of {_doc} to "%{contract.sell.type::%{_uuid}%} ? "No Contract Active"%"
+    set mongo value "contractsellbalance" of {_doc} to "%{contract.sell.balance::%{_uuid}%} ? 0%"
+    set mongo value "contractsellrequired" of {_doc} to "%{contract.sell.required::%{_uuid}%} ? 0%"
+    set mongo value "contractharvesttype" of {_doc} to "%{contract.harvest.type::%{_uuid}%} ? "No Contract Active"%"
+    set mongo value "contractharvestbalance" of {_doc} to "%{contract.harvest.balance::%{_uuid}%} ? 0%"
+    set mongo value "contractharvestrequired" of {_doc} to "%{contract.harvest.required::%{_uuid}%} ? 0%"
+    set mongo value "personalplots" of {_doc} to "%{personalplots::%{_uuid}%} ? 0%"
+    set mongo value "rankplots" of {_doc} to "%{rankplots::%{_p}%} ? 0%"
+    update mongo document {_doc} of {mongoCollection}
+    send action bar "&aSaved data" to {_p}
+
+function DBNewDocument(p: player):
+    set {_uuid} to uuid of {_p}
+    #send "&aCreating new document" to {_p}
+    set {_doc} to a new mongosk empty document
+    set mongo value "name" of {_doc} to "%{_p}%"
+    set mongo value "uuid" of {_doc} to "%{_uuid}%"  
+    set mongo value "rank" of {_doc} to "%{rank::%{_uuid}%} ? 0%"
+    set mongo value "multi" of {_doc} to "%{multi::%{_uuid}%} ? 1%"
+    set mongo value "chatcolor" of {_doc} to "%{chatcolor.%{_uuid}%} ? {defaultcolor}%"
+    set mongo value "farmcoins" of {_doc} to "%{farmcoins.%{_uuid}%} ? 0%"
+    set mongo value "cropsharvested" of {_doc} to "wheat,%{cropsharvested.%{_uuid}%::wheat} ? 0%|beetroot,%{cropsharvested.%{_uuid}%::beetroot} ? 0%|carrot,%{cropsharvested.%{_uuid}%::carrot} ? 0%|potato,%{cropsharvested.%{_uuid}%::potato} ? 0%|netherwart,%{cropsharvested.%{_uuid}%::netherwart} ? 0%|sugarcane,%{cropsharvested.%{_uuid}%::sugarcane} ? 0%|melon,%{cropsharvested.%{_uuid}%::melon} ? 0%|pumpkin,%{cropsharvested.%{_uuid}%::pumpkin} ? 0%"
+    set mongo value "contractselltype" of {_doc} to "%{contract.sell.type::%{_uuid}%} ? "No Contract Active"%"
+    set mongo value "contractsellbalance" of {_doc} to "%{contract.sell.balance::%{_uuid}%} ? 0%"
+    set mongo value "contractsellrequired" of {_doc} to "%{contract.sell.required::%{_uuid}%} ? 0%"
+    set mongo value "contractharvesttype" of {_doc} to "%{contract.harvest.type::%{_uuid}%} ? "No Contract Active"%"
+    set mongo value "contractharvestbalance" of {_doc} to "%{contract.harvest.balance::%{_uuid}%} ? 0%"
+    set mongo value "contractharvestrequired" of {_doc} to "%{contract.harvest.required::%{_uuid}%} ? 0%"
+    set mongo value "personalplots" of {_doc} to "%{personalplots::%{_uuid}%} ? 0%"
+    set mongo value "rankplots" of {_doc} to "%{rankplots::%{_p}%} ? 0%"
+    insert mongo document {_doc} into collection {mongoCollection}
+    DBLoad({_p})
+
+function ConvertVars(p: player):
+    set {_data} to {playerdata.%{_p}'s uuid%::cropsharvested}
+    loop split {_data} at "|":
+        set {_s::*} to split loop-value at ","
+        set {cropsharvested.%{_p}'s uuid%::%{_s::1}%} to ({_s::2} parsed as integer)

@@ -1,0 +1,30 @@
+on break of fully grown wheat plant or fully grown beetroot plant or fully grown carrot plant or fully grown potato plant or fully grown nether wart plant or sugar cane or pumpkin or melon:
+    set {_block} to "%event-block's type%"
+    replace all " " and "ripe" and "plant" in {_block} with ""
+    add 1 to {cropsharvested.%player's uuid%::%{_block}%}
+    if {cropsharvested.%player's uuid%::%{_block}%} is divisible by 25000:
+        add 0.01 to {multi::%player's uuid%}
+        send "&2&lFARMING &8| &2You received 0.01x multi for harvesting 25k %{_block}%"
+
+command /farmingstats:
+    trigger: 
+        FarmingStatsGUI(player)
+
+function FarmingStatsGUI(p: player):
+    set metadata tag "FarmingStats" of {_p} to chest inventory with 4 rows named "Farming Stats"
+    set slot 0,1,2,3,5,6,7,8,9,17,18,26,27,28,29,30,32,33,34 and 35 of metadata tag "FarmingStats" of {_p} to black stained glass pane named " "
+    set slot 31 of metadata tag "FarmingStats" of {_p} to book named "&8Info" with lore "&7Every 25k harvested of a crop" and "&7will give 0.01x multi."
+    set slot 4 of metadata tag "FarmingStats" of {_p} to eye of ender named "&8Stats" with lore "&7| Total Harvested %{cropsharvested.%{_p}'s uuid%::wheat} + {cropsharvested.%{_p}'s uuid%::beetroot} + {cropsharvested.%{_p}'s uuid%::carrot} + {cropsharvested.%{_p}'s uuid%::potato} + {cropsharvested.%{_p}'s uuid%::netherwart} + {cropsharvested.%{_p}'s uuid%::sugarcane} + {cropsharvested.%{_p}'s uuid%::melon} + {cropsharvested.%{_p}'s uuid%::pumpkin}%"
+    set slot 10 of metadata tag "FarmingStats" of {_p} to wheat named "&8Wheat" with lore "&7| Harvested %{cropsharvested.%{_p}'s uuid%::wheat}%"
+    set slot 11 of metadata tag "FarmingStats" of {_p} to beetroot named "&8Beetroot" with lore "&7| Harvested %{cropsharvested.%{_p}'s uuid%::beetroot}%"
+    set slot 12 of metadata tag "FarmingStats" of {_p} to carrot named "&8Carrot" with lore "&7| Harvested %{cropsharvested.%{_p}'s uuid%::carrot}%"
+    set slot 13 of metadata tag "FarmingStats" of {_p} to potato named "&8Potato" with lore "&7| Harvested %{cropsharvested.%{_p}'s uuid%::potato}%"
+    set slot 14 of metadata tag "FarmingStats" of {_p} to nether wart named "&8Nether Wart" with lore "&7| Harvested %{cropsharvested.%{_p}'s uuid%::netherwart}%"
+    set slot 15 of metadata tag "FarmingStats" of {_p} to sugar cane named "&8Sugar Cane" with lore "&7| Harvested %{cropsharvested.%{_p}'s uuid%::sugarcane}%"
+    set slot 16 of metadata tag "FarmingStats" of {_p} to melon named "&8Melon" with lore "&7| Harvested %{cropsharvested.%{_p}'s uuid%::melon}%"
+    set slot 19 of metadata tag "FarmingStats" of {_p} to pumpkin named "&8Pumpkin" with lore "&7| Harvested %{cropsharvested.%{_p}'s uuid%::pumpkin}%"
+    open (metadata tag "FarmingStats" of {_p}) to {_p}
+
+on inventory click:
+    if event-inventory = (metadata tag "FarmingStats" of player):
+        cancel event

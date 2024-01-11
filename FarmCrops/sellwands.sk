@@ -1,0 +1,122 @@
+function GetBlockPrice(i: integer) :: number:
+    set {_j} to 0
+    loop {prices::*}:
+        add 1 to {_j}
+        if {_i} is {_j}:
+            return loop-value
+        
+command /wandadmin [<text>] [<number>]:
+    permission: sellwand.admin
+    trigger:
+        if arg 1 is not set:
+            clear {prices::*}
+            clear {blocks::*}
+            send "&8- &cWand Admin"
+            send "&8> &e/wandadmin add <price> &7Adds the item in your hand to sell list"
+            send "&8> &e/wandadmin set <price> &7Sets the price of the item in your hand"
+            send "&8> &e/wandadmin remove <index> &7Remove a item from the list"
+            send "&8> &e/wandadmin list &7List all items"
+            send "&8- &cWand Admin"
+        else if arg 1 is "add":
+            arg 2 is set
+            if name of player's tool is not set:
+                add player's tool to {blocks::*}
+                add arg 2 to {prices::*}
+                send "&aAdded &2%player's tool% &awith price &2%arg 2%&2$"
+            else:
+                send "&cYou can't add items with a name"
+        else if arg 1 is "set":
+            arg 2 is set
+            if name of player's tool is not set:
+                loop {blocks::*}:
+                    if loop-value contains player's tool:
+                        send "%{prices::%loop-value%}%"
+                        set {prices::%loop-value%} to arg 2
+                        send "%{prices::%loop-value%}%"
+                        send "&aSet price for &2%player's tool% &ato &2%arg 2%&2$"
+        else if arg 1 is "list":
+            set {_n} to 0
+            loop {blocks::*}:
+                add 1 to {_n}
+                send "&6%{_n}% &8> &e%loop-value% &8| &e$%GetBlockPrice({_n})%"
+        else if arg 1 is "remove":
+            set {_i} to 0
+            loop {blocks::*}:
+                add 1 to {_i}
+                if {_i} is arg 2:
+                    remove loop-value from {blocks::*}
+                    set {_i} to 0
+                    loop {prices::*}:
+                        add 1 to {_i}
+                        if {_i} is arg 2:
+                            remove loop-value-2 from {prices::*}
+                            send "&aSuccessfully removed block and price"
+                            stop
+                else if arg 2 is not set:
+                    remove loop-value from {blocks::*}
+                    set {_i} to 0
+                    loop {prices::*}:
+                        add 1 to {_i}
+                        if {_i} is arg 2:
+                            remove loop-value-2 from {prices::*}
+                            send "&aSuccessfully removed block and price"
+                            stop
+                    delete {prices::*}
+            
+on left click with blaze rod on air:
+    if item amount of player's tool is 1:
+        if player is sneaking:
+            if name of item contains "Sell Wand":
+                SellWandUpgrade(player)
+    else:
+        send "&cYou can only upgrade 1 sellwand at once!"
+        
+function SellWandUpgrade(p: player):
+    set {_t} to tag "tag;multiplier" of nbt compound of {_p}'s held item
+    create a gui with virtual chest inventory with 3 rows named "Sell Wand":
+        format gui slot 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25 and 26 with black stained glass pane named ""
+        format gui slot 12 with book named "&8Upgrade Multiplier" with lore "&7Current Multiplier: %{_t}%" and "&7Cost: $%formatNumber(({_t} * 7500000) + 500000)%":
+            if {_t} < 2.5:
+                if {_p}'s balance >= ({_t} * 7500000) + 500000:
+                    remove ({_t} * 7500000) + 500000 from {_p}'s balance
+                    add 0.15 to {_t}
+                    set {_nbt} to nbt compound from "{multiplier:%{_t}%}"
+                    set {_p}'s held item to {_p}'s held item with nbt {_nbt}
+                else:
+                    send "&cYou dont have enough money!"
+                SellWandUpgrade({_p})
+            else:
+                send "&cYour sellwand is already maxed out!"
+        format gui slot 14 with book named "&8Sellwand Information" with lore "&7You can upgrade the sellwand to 2.5x." and "&7Every upgrade add 0.15x multiplier."
+    open last created gui to {_p}
+
+on right click with blaze rod on chest or hopper:
+    if item amount of player's tool is 1:
+        if name of item contains "Sell Wand":
+            set {_m} to tag "tag;multiplier" of nbt compound of player's held item
+            cancel event
+            loop all items in inventory of clicked block:
+                set {_amount} to item amount of loop-item
+                set {_n} to 0
+                loop {blocks::*}:
+                    add 1 to {_n}
+                    if loop-value-2 is {_amount} / {_amount} of loop-item:
+                        set {_checker} to loop-item
+                        stop loop
+                if {_checker} is set:
+                    add {_amount} to {_soldItems}
+                    add GetBlockPrice({_n}) * {_amount} to {_earnings}
+                    remove loop-item from inventory of event-block
+            {_soldItems} is more than 0
+            send "&a&lSell &a|&a Sold %formatNumber({_soldItems})% &aitem(s) for $%formatNumber({_earnings} * ({multi::%player's uuid%} ? 1) * {_m} * {sellbooster})%"
+            add {_earnings} * ({multi::%player's uuid%} ? 1) * {_m} * {booster} * {sellbooster} to player's balance
+            if {contract.sell.type::%player's uuid%} is set:
+                if ({contract.sell.balance::%player's uuid%} + {_soldItems}) < {contract.sell.required::%player's uuid%}:
+                    add {_soldItems} / 2 to {contract.sell.balance::%player's uuid%}
+                else:
+                    set {contract.sell.balance::%player's uuid%} to {contract.sell.required::%player's uuid%}
+                    send title "&c&lContract Complete" with subtitle "&f&lOpen /contract to claim" to player for 3 seconds
+                    send "&cContract Complete | Open /contract to claim"
+                    play sound "block.note_block.pling" at volume 1 at pitch 2 to player
+    else:
+        send "&cYou can only use 1 sellwand at once!"

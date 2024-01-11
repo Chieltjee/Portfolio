@@ -1,0 +1,175 @@
+options:
+    selldivided: 200
+    harvestdivided: 100
+    sellmultiplied: 1.1
+    harvestmultiplied: 2.1
+
+command /contracts:
+    aliases: contract
+    trigger:
+        create a gui with virtual chest inventory with 3 rows named "Contracts":
+            format gui slot 0,1,2,3,4,5,6,7,8,9,10,11,13,15,16,17,18,19,20,21,22,23,24,25 and 26 with black stained glass pane named " "
+            format gui slot 12 with paper named "&aSell Contracts":
+                SellContractGUI(player)
+            format gui slot 14 with paper named "&aHarvest Contracts":
+                HarvestContractGUI(player)
+        open last created gui to player
+
+function SellContractGUI(p: player):
+    set {_u} to uuid of {_p}
+    create a gui with virtual chest inventory with 3 rows named "Sell Contracts":
+        format gui slot 0,1,2,3,4,5,6,7,8,9,10,16,17,19,20,21,22,23,24 and 25 with black stained glass pane named " "
+        if {contract.sell.required::%{_u}%} > 0:
+            if {contract.sell.balance::%{_u}%} >= {contract.sell.required::%{_u}%}:
+                if {contract.sell.type::%{_u}%} is "Easy":
+                    format gui slot 11 with paper named "&aEasy Contract" with lore "&7Click to claim":
+                        EndContract({_p}, "sell")
+                else:
+                    format gui slot 11 with paper named "&aEasy Contract"
+                if {contract.sell.type::%{_u}%} is "Medium":
+                    format gui slot 12 with paper named "&6Medium Contract" with lore "&7Click to claim":
+                        EndContract({_p}, "sell")
+                else:
+                    format gui slot 12 with paper named "&6Medium Contract"
+                if {contract.sell.type::%{_u}%} is "Hard":
+                    format gui slot 13 with paper named "&4Hard Contract" with lore "&7Click to claim":
+                        EndContract({_p}, "sell")
+                else:
+                    format gui slot 13 with paper named "&4Hard Contract"
+                if {contract.sell.type::%{_u}%} is "Extreme":
+                    format gui slot 14 with paper named "<##6f0909>Extreme Contract" with lore "&7Click to claim":
+                        EndContract({_p}, "sell")
+                else:
+                    format gui slot 14 with paper named "<##6f0909>Extreme Contract"
+                if {contract.sell.type::%{_u}%} is "Insane":
+                    format gui slot 15 with paper named "<##380404>Insane Contract" with lore "&7Click to claim":
+                        EndContract({_p}, "sell")
+                else:
+                    format gui slot 15 with paper named "<##380404>Insane Contract"
+            else:
+                format gui slot 11 with paper named "&aEasy Contract"
+                format gui slot 12 with paper named "&6Medium Contract"
+                format gui slot 13 with paper named "&4Hard Contract"
+                format gui slot 14 with paper named "<##6f0909>Extreme Contract"
+                format gui slot 15 with paper named "<##380404>Insane Contract"
+        else:
+            format gui slot 11 with paper named "&aEasy Contract" with lore "&7Sell 100 - 2.5k Crops" and "&7Cost: $1.5k" and "&7Click to start contract" :
+                StartContract({_p}, "Easy", 100, 2500, "sell", 1500)
+            format gui slot 12 with paper named "&6Medium Contract" with lore "&7Sell 7.5k - 20k Crops" and "&7Cost: $17.5k" and "&7Click to start contract":
+                StartContract({_p}, "Medium", 7500, 20000, "sell", 17500)
+            format gui slot 13 with paper named "&4Hard Contract" with lore "&7Sell 25k - 100k Crops" and "&7Cost: $65k" and "&7Click to start contract":
+                StartContract({_p}, "Hard", 25000, 100000, "sell", 65000)
+            format gui slot 14 with paper named "<##6f0909>Extreme Contract" with lore "&7Sell 150k - 300k Crops" and "&7Cost: $205k" and "&7Click to start contract":
+                StartContract({_p}, "Extreme", 150000, 300000, "sell", 205000)
+            format gui slot 15 with paper named "<##380404>Insane Contract" with lore "&7Sell 500k - 1m Crops" and "&7Cost: $750k" and "&7Click to start contract":
+                StartContract({_p}, "Insane", 500000, 1000000, "sell", 750000)
+        format gui slot 22 with barrier named "&cGo Back":
+            make {_p} execute command "/contracts"
+        format gui slot 18 with red dye named "&cCancel Contract" with lore "&7You wont get any rewards if you cancel the contract." and "&7Click to cancel contract":
+            CancelContract(player, "sell")
+        format gui slot 26 with paper named "&aActive Contract: %{contract.sell.type::%{_u}%} ? "No contract active"%" with lore "&7Progress: %formatNumber({contract.sell.balance::%{_u}%} ? 0)% &7/ %formatNumber({contract.sell.required::%{_u}%} ? 0)% &7Crops Sold" and "&7Reward: ⛃%formatNumber(({contract.sell.required::%{_u}%} ? 0) / {@selldivided} * {@sellmultiplied})%"
+    open last created gui to {_p}
+
+function HarvestContractGUI(p: player):
+    set {_u} to uuid of {_p}
+    create a gui with virtual chest inventory with 3 rows named "Harvest Contracts":
+        format gui slot 0,1,2,3,4,5,6,7,8,9,10,16,17,19,20,21,22,23,24 and 25 with black stained glass pane named " "
+        if {contract.harvest.required::%{_u}%} > 0:
+            if {contract.harvest.balance::%{_u}%} >= {contract.harvest.required::%{_u}%}:
+                if {contract.harvest.type::%{_u}%} is "Easy":
+                    format gui slot 11 with paper named "&aEasy Contract" with lore "&7Click to claim":
+                        EndContract({_p}, "harvest")
+                else:
+                    format gui slot 11 with paper named "&aEasy Contract"
+                if {contract.harvest.type::%{_u}%} is "Medium":
+                    format gui slot 12 with paper named "&6Medium Contract" with lore "&7Click to claim":
+                        EndContract({_p}, "harvest")
+                else:
+                    format gui slot 12 with paper named "&6Medium Contract"
+                if {contract.harvest.type::%{_u}%} is "Hard":
+                    format gui slot 13 with paper named "&4Hard Contract" with lore "&7Click to claim":
+                        EndContract({_p}, "harvest")
+                else:
+                    format gui slot 13 with paper named "&4Hard Contract"
+                if {contract.sell.type::%{_u}%} is "Extreme":
+                    format gui slot 14 with paper named "<##6f0909>Extreme Contract" with lore "&7Click to claim":
+                        EndContract({_p}, "harvest")
+                else:
+                    format gui slot 14 with paper named "<##6f0909>Extreme Contract"
+                if {contract.sell.type::%{_u}%} is "Insane":
+                    format gui slot 15 with paper named "<##380404>Insane Contract" with lore "&7Click to claim":
+                        EndContract({_p}, "harvest")
+                else:
+                    format gui slot 15 with paper named "<##380404>Insane Contract"
+            else:
+                format gui slot 11 with paper named "&aEasy Contract"
+                format gui slot 12 with paper named "&6Medium Contract"
+                format gui slot 13 with paper named "&4Hard Contract"
+                format gui slot 14 with paper named "<##6f0909>Extreme Contract"
+                format gui slot 15 with paper named "<##380404>Insane Contract"
+        else:
+            format gui slot 11 with paper named "&aEasy Contract" with lore "&7Harvest 100 - 2.5k Crops" and "&7Cost: $1k" and "&7Click to start contract":
+                StartContract({_p}, "Easy", 100, 2500, "harvest", 1000)
+            format gui slot 12 with paper named "&6Medium Contract" with lore "&7Harvest 7.5k - 20k Crops" and "&7Cost: $12.5k" and "&7Click to start contract":
+                StartContract({_p}, "Medium", 7500, 20000, "harvest", 12500)
+            format gui slot 13 with paper named "&4Hard Contract" with lore "&7Harvest 25k - 100k Crops" and "&7Cost: $50k" and "&7Click to start contract":
+                StartContract({_p}, "Hard", 25000, 100000, "harvest", 50000)
+            format gui slot 14 with paper named "<##6f0909>Extreme Contract" with lore "&7Harvest 150k - 225k Crops" and "&7Cost: $175k" and "&7Click to start contract":
+                StartContract({_p}, "Extreme", 150000, 225000, "harvest", 175000)
+            format gui slot 15 with paper named "<##380404>Insane Contract" with lore "&7Harvest 300k - 500k Crops" and "&7Cost: $400k" and "&7Click to start contract":
+                StartContract({_p}, "Insane", 300000, 500000, "harvest", 400000)
+        format gui slot 22 with barrier named "&cGo Back":
+            make {_p} execute command "/contracts"
+        format gui slot 18 with red dye named "&cCancel Contract" with lore "&7You wont get any rewards if you cancel the contract" and "&7Click to cancel contract":
+            CancelContract(player, "harvest")
+        format gui slot 26 with paper named "&aActive Contract: %{contract.harvest.type::%{_u}%} ? "No contract active"%" with lore "&7Progress: %formatNumber({contract.harvest.balance::%{_u}%} ? 0)% &7/ %formatNumber({contract.harvest.required::%{_u}%} ? 0)% &7Crops Harvested" and "&7Reward: ⛃%formatNumber(({contract.harvest.required::%{_u}%} ? 0) / {@harvestdivided} * {@harvestmultiplied})%"
+    open last created gui to {_p}
+
+function StartContract(p: player, t: text, min: integer, max: integer, type: text, cost: integer):
+    set {_u} to uuid of {_p}
+    if {contract.%{_type}%.type::%{_u}%} is "No contract active":
+        if {_p}'s balance >= {_cost}:
+            remove {_cost} from {_p}'s balance
+            set {contract.%{_type}%.type::%{_u}%} to "%{_t}%"
+            set {contract.%{_type}%.balance::%{_u}%} to 0
+            set {contract.%{_type}%.required::%{_u}%} to random integer between {_min} and {_max}
+            send "&aContract started! %{_type}% %formatNumber({contract.%{_type}%.required::%{_u}%})% crops" to {_p}
+            make {_p} execute command "/contracts"
+        else:
+            send "&cYou dont have enough money to start this contract!" to {_p}
+    else:
+        send "&cYou already have a active contract!" to {_p}
+        
+function EndContract(p: player, type: text):
+    set {_u} to uuid of {_p}
+    set {contract.%{_type}%.balance::%{_u}%} to 0
+    if {_type} is "sell":
+        add {contract.%{_type}%.required::%{_u}%} / {@selldivided} * {@sellmultiplied} to {farmcoins.%{_u}%}
+    else if {_type} is "harvest":
+        add {contract.%{_type}%.required::%{_u}%} / {@harvestdivided} * {@harvestmultiplied} to {farmcoins.%{_u}%}
+    set {contract.%{_type}%.required::%{_u}%} to 0
+    set {contract.%{_type}%.type::%{_u}%} to "No contract active"
+    make {_p} execute command "/contracts"
+    send "&cSuccesfully claimed contract rewards." to {_p}
+
+function CancelContract(p: player, type: text):
+    set {_u} to uuid of {_p}
+    if ({contract.%{_type}%.type::%{_u}%}) is set:
+        set {contract.%{_type}%.balance::%{_u}%} to 0
+        set {contract.%{_type}%.required::%{_u}%} to 0
+        set  {contract.%{_type}%.type::%{_u}%} to "No contract active"
+        send "&cContract Cancelled!" to {_p}
+        make {_p} execute command "/contracts"
+    else:
+        send "&cYou dont have a active contract!" to {_p}
+
+on break of fully grown wheat plant or fully grown beetroot plant or fully grown carrot plant or fully grown potato plant or fully grown nether wart plant or sugar cane or pumpkin or melon:
+    if {contract.harvest.type::%player's uuid%} is set:
+        if {contract.harvest.required::%player's uuid%} is not 0:
+            if ({contract.harvest.balance::%player's uuid%} + 1) < {contract.harvest.required::%player's uuid%}:
+                add 1 to {contract.harvest.balance::%player's uuid%}
+            else:
+                set {contract.harvest.balance::%player's uuid%} to {contract.harvest.required::%player's uuid%}
+                send title "&c&lContract Complete" with subtitle "&f&lOpen /contract to claim" to player for 3 seconds
+                send "&cContract Complete | Open /contract to claim"
+                play sound "block.note_block.pling" at volume 1 at pitch 2 to player

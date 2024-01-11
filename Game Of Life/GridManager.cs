@@ -113,6 +113,40 @@ public class GridManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Draws the tiles in the grid and changes the spriterenderer
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    private void DrawTile(int x, int y)
+    {
+        //if the grid is not empty
+        if (gridArray[x,y] != null)
+        {
+            //Get the spriterenderer
+            spriteRenderer = gridArray[x,y].GetComponent<SpriteRenderer>();
+
+            //If the tile is alive update the sprite to alive
+            if (stateArray[x,y] == 1)
+            {
+                spriteRenderer.sprite = aliveTile;
+            }
+            else
+            {
+                spriteRenderer.sprite = deadTile;
+            }
+        }
+        else
+        {
+            //Get the spriterenderer, instantiate the gameobject and update its name
+            spriteRenderer = TilePrefab.GetComponent<SpriteRenderer>();
+            spriteRenderer.sprite = deadTile;
+            gridArray[x,y] = Instantiate(TilePrefab, new Vector3(startPos.transform.position.x + 0.5f, 
+            startPos.transform.position.y + 0.5f) + new Vector3(x * 1.0f, y * 1.0f), Quaternion.identity);
+            gridArray[x,y].gameObject.name = x + "," + y;
+        }
+    }
+
+    /// <summary>
     /// Applies the rules of game of life to the tiles in the grid
     /// </summary>
     private void ApplyRules()
@@ -159,38 +193,6 @@ public class GridManager : MonoBehaviour
     }
 
 
-    /// <summary>
-    /// Draws the tiles in the grid and changes the spriterenderer
-    /// </summary>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
-    private void DrawTile(int x, int y)
-    {
-        //if the grid is not empty
-        if (gridArray[x,y] != null)
-        {
-            //Get the spriterenderer
-            spriteRenderer = gridArray[x,y].GetComponent<SpriteRenderer>();
-
-            //If the tile is alive update the sprite to alive
-            if (stateArray[x,y] == 1)
-            {
-                spriteRenderer.sprite = aliveTile;
-            }
-            else
-            {
-                spriteRenderer.sprite = deadTile;
-            }
-        }
-        else
-        {
-            //Get the spriterenderer, instantiate the gameobject and update its name
-            spriteRenderer = TilePrefab.GetComponent<SpriteRenderer>();
-            spriteRenderer.sprite = deadTile;
-            gridArray[x,y] = Instantiate(TilePrefab, new Vector3(startPos.transform.position.x + 0.5f, startPos.transform.position.y + 0.5f) + new Vector3(x * 1.0f, y * 1.0f), Quaternion.identity);
-            gridArray[x,y].gameObject.name = x + "," + y;
-        }
-    }
 
     public void RandomStart()
     {

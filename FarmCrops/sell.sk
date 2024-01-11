@@ -1,0 +1,91 @@
+options:
+    wheatprice: 6
+    carrotprice: 8
+    potatoprice: 10
+    netherwartprice: 15
+    melonprice: 3
+    pumpkinprice: 3
+    sugarcaneprice: 2
+    cactusprice: 5
+    beetrootprice: 7
+    melonsliceprice: 0.2
+    wheatseedprice: 0.1
+    poisonouspotatoprice: 50
+
+command /sell:
+    trigger:
+        set {_wheat} to number of wheat in player's inventory
+        set {_carrot} to number of carrot in player's inventory
+        set {_potato} to number of potato in player's inventory
+        set {_netherwart} to number of nether wart in player's inventory
+        set {_melon} to number of melon in player's inventory
+        set {_pumpkin} to number of pumpkin in player's inventory
+        set {_sugarcane} to number of sugar cane in player's inventory
+        set {_cactus} to number of cactus in player's inventory
+        set {_beetroot} to number of beetroot in player's inventory
+        set {_melonslice} to number of melon slice in player's inventory 
+        set {_wheatseed} to number of wheat seeds in player's inventory 
+        set {_poisonouspotato} to number of poisonous potato in player's inventory
+        remove all wheat, carrot, pumpkin, sugar cane, cactus, potato, melon, beetroot, melon slice, nether wart, wheat seeds and poisonous potato from player's inventory
+        set {_1} to {_wheat} * {@wheatprice} * {multi::%player's uuid%} * {sellbooster}
+        set {_2} to {_carrot} * {@carrotprice} * {multi::%player's uuid%} * {sellbooster}
+        set {_3} to {_potato} * {@potatoprice} * {multi::%player's uuid%} * {sellbooster}
+        set {_4} to {_netherwart} * {@netherwartprice} * {multi::%player's uuid%} * {sellbooster}
+        set {_5} to {_melon} * {@melonprice} * {multi::%player's uuid%} * {sellbooster}
+        set {_6} to {_pumpkin} * {@pumpkinprice} * {multi::%player's uuid%} * {sellbooster}
+        set {_7} to {_sugarcane} * {@sugarcaneprice} * {multi::%player's uuid%} * {sellbooster}
+        set {_8} to {_cactus} * {@cactusprice} * {multi::%player's uuid%} * {sellbooster}
+        set {_9} to {_beetroot} * {@beetrootprice} * {multi::%player's uuid%} * {sellbooster}
+        set {_10} to {_melonslice} * {@melonsliceprice} * {multi::%player's uuid%} * {sellbooster}
+        set {_11} to {_wheatseed} * {@wheatseedprice} * {multi::%player's uuid%} * {sellbooster}
+        set {_12} to {_poisonouspotato} * {@poisonouspotatoprice} * {multi::%player's uuid%} * {sellbooster}
+        set {_total} to {_1} + {_2} + {_3} + {_4} + {_5} + {_6} + {_7} + {_8} + {_9} + {_10} + {_11} + {_12}
+        send title "&a&lSold all items" with subtitle "&f&lEarned $%formatNumber({_total})%" to player for 3 seconds
+        add {_total} to player's balance
+
+command /sell <text>:
+    cooldown: 1 second
+    usage: /sell hand / all
+    trigger:
+        if arg-1 is "hand":
+            set {_i} to type of player's held item
+            set {_l} to 1  
+            loop {blocks::*}:
+                if {_i} is loop-value:
+                    set {_item} to number of {_i} in player's inventory 
+                    remove all {_i} from player's inventory
+                    add GetBlockPrice({_l}) * {_item} to {_total}
+                    add {_total} * ({multi::%player's uuid%} ? 1) * {booster} * {sellbooster} to player's balance
+                    if {contract.sell.type::%player's uuid%} is set:
+                        if {contract.sell.required::%player's uuid%} is not 0:
+                            if ({contract.sell.balance::%player's uuid%} + {_item}) < {contract.sell.required::%player's uuid%}:
+                                add {_item} to {contract.sell.balance::%player's uuid%}
+                            else:
+                                set {contract.sell.balance::%player's uuid%} to {contract.sell.required::%player's uuid%}
+                                send title "&c&lContract Complete" with subtitle "&f&lOpen /contract to claim" to player for 3 seconds
+                                send "&cContract Complete | Open /contract to claim"
+                                play sound "block.note_block.pling" at volume 1 at pitch 2 to player
+                add 1 to {_l}
+            if {_total} is set:
+                send title "&a&lSold all items" with subtitle "&f&lEarned $%formatNumber({_total} * ({multi::%player's uuid%} ? 1) * {booster} * {sellbooster})%" to player for 3 seconds
+        else if arg-1 is "all":
+            set {_l} to 1   
+            loop {blocks::*}:
+                if player's inventory contains loop-value's type:
+                    set {_item} to number of loop-value in player's inventory 
+                    remove all loop-value from player's inventory
+                    add GetBlockPrice({_l}) * {_item} to {_total}
+                    add {_total} * ({multi::%player's uuid%} ? 1) * {booster} * {sellbooster} to player's balance
+                    if {contract.sell.type::%player's uuid%} is set:
+                        if {contract.sell.required::%player's uuid%} is not 0:
+                            if ({contract.sell.balance::%player's uuid%} + {_item}) < {contract.sell.required::%player's uuid%}:
+                                add {_item} to {contract.sell.balance::%player's uuid%}
+                            else:
+                                set {contract.sell.balance::%player's uuid%} to {contract.sell.required::%player's uuid%}
+                                send title "&c&lContract Complete" with subtitle "&f&lOpen /contract to claim" to player for 3 seconds
+                                send "&cContract Complete | Open /contract to claim"
+                                play sound "block.note_block.pling" at volume 1 at pitch 2 to player
+                add 1 to {_l}
+            if {_total} is set:
+                send title "&a&lSold all items" with subtitle "&f&lEarned $%formatNumber({_total} * ({multi::%player's uuid%} ? 1) * {booster} * {sellbooster})%" to player for 3 seconds
+
